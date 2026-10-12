@@ -150,3 +150,81 @@ def is_weakly_connected(graph):
     is_connected = len(components) == 1
     print(is_connected)
     return is_connected
+
+    #Task 4
+
+def eulerian_type(graph, directed=False):
+    """
+    Input: an adjacency list; directed.
+    Output: one of the literal strings "circuit", "path", "none".
+    Hint: reuse degrees/in_out_degree and connected_components/is_weakly_connected 
+    from Tasks 1 and 3. The undirected and directed rules are genuinely different — 
+    write them as two clearly separate branches, do not try to force them into one 
+    shared formula.
+    Run it on the graphs from the handout: your function's verdict must agree with 
+    what you derived by hand, for all of G1, G3, G4, G5a, G5b and Königsberg. 
+    If any of them disagree, do not assume the code is the one that is wrong — 
+    recheck your hand reasoning too; either could be the bug.
+    Self-checks (these must hold for any implementation, not just a correct one — 
+    if one of them fails, you have found a bug, in your code or in your by-hand 
+    reasoning):
+    Delete any single edge from a graph your function currently calls "circuit"; 
+    it must now return "path" or "none", never "circuit" again. Removing one edge 
+    can only break the even-degree condition at its two endpoints — it can never 
+    fix a connectivity problem that was not already there. Try this on every graph 
+    from the handout that your function calls "circuit".
+    Before calling your function, count the odd-degree vertices (undirected) or the 
+    excess (out − in) of every vertex (directed) yourself. If an undirected graph 
+    has anything other than 0 or 2 odd-degree vertices, your function must return 
+    "none". If a directed graph has any vertex with an excess of +2, −2, or 
+    anything besides 0/+1/−1, it must also return "none" — a single vertex with 
+    excess 2 makes an Eulerian path just as impossible as four odd-degree vertices 
+    do in the undirected case, even though its in+out degree sum can still be even.
+    A disconnected (or, for directed graphs, not weakly connected) graph must 
+    always come back "none", no matter what the degrees say. Test this directly 
+    on G1.
+    For a directed graph, reverse every single edge. If the original graph was 
+    "circuit", the reversed graph must still be "circuit" (in-degree and out-degree 
+    simply swap roles at every vertex; weak connectivity is unaffected by reversal). 
+    Try this on every directed graph from the handout that your function calls 
+    "circuit".
+    """
+
+    if directed:
+        in_degree, out_degree = in_out_degree(graph)
+        excess = {v: out_degree[v] - in_degree[v] for v in graph}
+        
+        # Check weak connectivity
+        if not is_weakly_connected(graph):
+            return "none"
+        
+        # Count vertices with excess +1 and -1
+        plus_one = sum(1 for e in excess.values() if e == 1)
+        minus_one = sum(1 for e in excess.values() if e == -1)
+        
+        if plus_one == 0 and minus_one == 0:
+            return "circuit"
+        elif plus_one == 1 and minus_one == 1:
+            return "path"
+        else:
+            return "none"
+    else:
+        degree_dict = degrees(graph)
+        
+        # Check connectivity
+        components = connected_components(graph)
+        if len(components) > 1:
+            return "none"
+        
+        # Count odd-degree vertices
+        odd_count = sum(1 for d in degree_dict.values() if d % 2 != 0)
+        
+        if odd_count == 0:
+            return "circuit"
+        elif odd_count == 2:
+            return "path"
+        else:
+            return "none"
+
+eulerian_type(graph, directed=True)
+
