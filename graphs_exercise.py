@@ -73,3 +73,80 @@ def in_out_degree(graph):
 graph = build_adjacency_list(E, directed=True)
 in_degree, out_degree = in_out_degree(graph)
 print(sum(in_degree.values()) == sum(out_degree.values()) == len(E))
+
+
+#Taks 3
+
+def dfs(graph, start):
+    """
+    Input: an adjacency list (undirected or directed), a start vertex.
+    Output: list[str], the vertices reachable from start, in the order you first 
+    visit them.
+    Ties: when a vertex has several unvisited neighbours, visit them in sorted 
+    order — this is exactly what makes your hand-trace on the handout and your 
+    code agree, not just on the set of vertices but on the order too.
+    """
+    
+    visited = set()
+    result = []
+
+    def dfs_helper(v):
+        visited.add(v)
+        result.append(v)
+        for neighbor in sorted(graph[v]):
+            if neighbor not in visited:
+                dfs_helper(neighbor)
+
+    dfs_helper(start)
+    print(result)
+    return result
+
+def connected_components(graph):
+    """
+    Input: an adjacency list.
+    Output: list[set[str]], one set per maximal connected component.
+    Hint: repeatedly call dfs from any vertex that is not yet in any component 
+    you have found.
+    Self-check: the components must partition the vertex set of the graph — their 
+    union is exactly set(graph), and no two components share a vertex. Check this 
+    with set operations on your own output.
+    """
+
+    components = []
+    visited = set()
+
+    for vertex in graph:
+        if vertex not in visited:
+            component = set(dfs(graph, vertex))
+            components.append(component)
+            visited.update(component)
+
+    print(components)
+    return components
+
+def is_weakly_connected(graph):
+    """
+    Input: a directed adjacency list.
+    Output: bool, true exactly when treating every directed edge as undirected 
+    (its "shadow") gives a single connected component.
+    Hint: build the undirected shadow of the graph — for every edge u → v, add v to 
+    u's and u to v's neighbour list in a fresh adjacency list — then reuse 
+    connected_components on the shadow.
+    """
+
+    # Build the undirected shadow of the directed graph
+    shadow_graph = {}
+    for u in graph:
+        if u not in shadow_graph:
+            shadow_graph[u] = []
+        for v in graph[u]:
+            if v not in shadow_graph:
+                shadow_graph[v] = []
+            shadow_graph[u].append(v)
+            shadow_graph[v].append(u)
+
+    # Check if the shadow graph has a single connected component
+    components = connected_components(shadow_graph)
+    is_connected = len(components) == 1
+    print(is_connected)
+    return is_connected
